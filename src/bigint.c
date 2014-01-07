@@ -109,7 +109,8 @@ struct bigint_t bigint_add(const struct bigint_t * left, const struct bigint_t *
       ret.digits = tmp;
     }
   }
-  else {
+  else
+  {
     ret.len = max_len;
   }
 
