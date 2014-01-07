@@ -33,6 +33,11 @@ struct bigint_t bigint_new_int(unsigned long l)
   return i;
 }
 
+void bigint_free(const struct bigint_t *i)
+{
+  free(i->digits);
+}
+
 bool bigint_zero_p(const struct bigint_t *i)
 {
   unsigned long *digits = i->digits;
@@ -65,8 +70,14 @@ struct bigint_t bigint_add(const struct bigint_t * left, const struct bigint_t *
 {
   struct bigint_t ret = bigint_new_empty();
   size_t max_len      = left->len > right->len ? left->len : right->len;
-  ret.digits          = calloc(max_len, (sizeof (unsigned long)));
+  unsigned long *tmp  = realloc(ret.digits, max_len * (sizeof (unsigned long)));
   int carry_up        = 0;
+
+  if (ret.digits != tmp)
+  {
+    free(ret.digits);
+    ret.digits = tmp;
+  }
 
   for (int i = 0; i < max_len; ++i)
   {
@@ -88,12 +99,15 @@ struct bigint_t bigint_add(const struct bigint_t * left, const struct bigint_t *
 
   if (carry_up)
   {
-    unsigned long *tmp  = ret.digits;
-    ret.len             = max_len + 1;
-    ret.digits          = calloc(max_len + 1, (sizeof (unsigned long)));
-    ret.digits[max_len] = carry_up;
-    memcpy(ret.digits, tmp, max_len * (sizeof (unsigned long)));
-    free(tmp);
+    tmp           = realloc(ret.digits, (max_len + 1) * (sizeof (unsigned long)));
+    ret.len       = max_len + 1;
+    tmp[max_len]  = carry_up;
+
+    if (ret.digits != tmp)
+    {
+      free(ret.digits);
+      ret.digits = tmp;
+    }
   }
   else {
     ret.len = max_len;

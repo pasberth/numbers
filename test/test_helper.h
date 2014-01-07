@@ -21,6 +21,8 @@
       {                                                         \
         printf("\e[31m.\e[0m");                                 \
       }                                                         \
+      bigint_free(&a);                                          \
+      bigint_free(&b);                                          \
     }                                                           \
   }                                                             \
   printf("\n");

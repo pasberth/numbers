@@ -11,7 +11,13 @@ int main(int argc, char const *argv[])
   {
     bigint_pretty_print(&nat);
     printf("\n");
-    nat = bigint_add(&nat, &one);
+    struct bigint_t tmp = bigint_add(&nat, &one);
+    bigint_free(&nat);
+    nat = tmp;
   }
+
+  bigint_free(&zero);
+  bigint_free(&one);
+  bigint_free(&nat);
   return 0;
 }
