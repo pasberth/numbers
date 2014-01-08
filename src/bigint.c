@@ -107,6 +107,70 @@ struct bigint_t bigint_add(const struct bigint_t * left, const struct bigint_t *
   return ret;
 }
 
+struct bigint_t bigint_sub(const struct bigint_t * left, const struct bigint_t * right)
+{
+  /* If the left is less than the right, bigint_sub always returns 0. */
+
+  if (left->len < right->len)
+    return bigint_new_empty();
+
+  if (left->len == right->len && left->digits[left->len - 1] < right->digits[right->len - 1])
+    return bigint_new_empty();
+
+  /* Now, the following expressions holds at all times:
+   *   left.len                     >= right.len
+   *   left->digits[left->len - 1]  >= right->digits[right->len - 1]
+   */
+
+  struct bigint_t ret = bigint_new_empty();
+  size_t max_len      = left->len;
+  unsigned long *tmp  = realloc(ret.digits, max_len * (sizeof (unsigned long)));
+  ret.len             = max_len;
+  ret.digits          = tmp;
+  int carry_down      = 0;
+
+  for (int i = 0; i < max_len; ++i)
+  {
+    unsigned long left_digit  = left->len   < i + 1 ? 0 : left->digits[i];
+    unsigned long right_digit = right->len  < i + 1 ? 0 : right->digits[i];
+
+    if (left_digit >= right_digit + carry_down)
+    {
+      unsigned long ret_digit   = left_digit - right_digit - carry_down;
+      ret.digits[i]             = ret_digit;
+      carry_down                = 0;
+    }
+    else
+    {
+      unsigned long ret_digit   = left_digit + bigint_max - right_digit - carry_down;
+      ret.digits[i]             = ret_digit;
+      carry_down                = 1;
+    }
+  }
+
+  if (carry_down)
+  {
+    /* If left < right, */
+    bigint_free(&ret);
+    return bigint_new_empty();
+  }
+
+  int strip_len = 0;
+
+  for (int i = 0; i < max_len - 1; ++i)
+  {
+    if (ret.digits[max_len - i - 1] != 0)
+      break;
+    ++strip_len;
+  }
+
+  tmp         = realloc(ret.digits, (max_len - strip_len) * (sizeof (unsigned long)));
+  ret.len     = max_len - strip_len;
+  ret.digits  = tmp;
+
+  return ret;
+}
+
 void bigint_pretty_print(const struct bigint_t * i)
 {
   unsigned long *digits = i->digits;

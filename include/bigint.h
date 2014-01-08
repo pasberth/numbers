@@ -15,6 +15,7 @@ void bigint_free(const struct bigint_t *);
 bool bigint_zero_p(const struct bigint_t *);
 bool bigint_eq(const struct bigint_t *, const struct bigint_t *);
 struct bigint_t bigint_add(const struct bigint_t *, const struct bigint_t *);
+struct bigint_t bigint_sub(const struct bigint_t *, const struct bigint_t *);
 void bigint_pretty_print(const struct bigint_t *);
 
 #endif
